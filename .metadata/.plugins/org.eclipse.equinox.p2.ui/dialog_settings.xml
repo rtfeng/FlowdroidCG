@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.equinox.internal.p2.ui.dialogs.UpdateWizard.WizardSettings">
+		<item value="813" key="DIALOG_WIDTH"/>
+		<item value="1|Cantarell|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+		<item value="638" key="DIALOG_HEIGHT"/>
+		<item value="74" key="DIALOG_X_ORIGIN"/>
+		<item value="207" key="DIALOG_Y_ORIGIN"/>
+	</section>
+	<section name="org.eclipse.equinox.internal.p2.ui.dialogs.UninstallWizard.WizardSettings">
+		<item value="613" key="DIALOG_WIDTH"/>
+		<item value="1|Cantarell|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+		<item value="586" key="DIALOG_HEIGHT"/>
+		<item value="110" key="DIALOG_X_ORIGIN"/>
+		<item value="42" key="DIALOG_Y_ORIGIN"/>
+	</section>
+	<section name="org.eclipse.equinox.internal.p2.ui.dialogs.InstallWizard.WizardSettings">
+		<item value="833" key="DIALOG_WIDTH"/>
+		<item value="1|Cantarell|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+		<item value="865" key="DIALOG_HEIGHT"/>
+		<item value="64" key="DIALOG_X_ORIGIN"/>
+		<item value="94" key="DIALOG_Y_ORIGIN"/>
+	</section>
+</section>

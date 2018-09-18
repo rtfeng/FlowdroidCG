@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item value="0" key="org.eclipse.egit.ui.internal.clone.GitSelectWizardPageWizardSel"/>
+	<list key="RepositorySelectionPage.UsedUris">
+		<item value="https://github.com/secure-software-engineering/FlowDroid.git"/>
+		<item value="https://github.com/Sable/soot.git"/>
+		<item value="https://github.com/Sable/jasmin.git"/>
+		<item value="https://github.com/Sable/heros.git"/>
+		<item value="https://github.com/secure-software-engineering/FlowDroid"/>
+		<item value="https://github.com/secure-software-engineering/soot-infoflow-android"/>
+	</list>
+	<list key="EGit.KnownHosts">
+		<item value="git.eclipse.org"/>
+		<item value="bitbucket.org"/>
+		<item value="github.com"/>
+	</list>
+	<section name="GitImportWizard">
+		<item value="true" key="GitProjectsImportPage.STORE_NESTED_PROJECTS"/>
+	</section>
+</section>

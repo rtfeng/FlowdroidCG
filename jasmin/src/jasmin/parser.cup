@@ -1,0 +1,1186 @@
+/** 
+    Modifications Copyright (C) 1997, 1998 Raja Vallee-Rai (kor@sable.mcgill.ca)
+    All rights reserved.                                              
+   
+    Changes:
+        - Changed the grammar of the parser to fix some ambiguities
+          which occur when a field is named "method" and vice versa.                                                                  
+*/
+
+/* --- Copyright Jonathan Meyer 1996. All rights reserved. -----------------
+ > File:        jasmin/src/jasmin/parser.cup
+ > Purpose:     Parser for Jasmin
+ > Author:      Jonathan Meyer, 10 July 1996
+ */
+
+/*
+ * parser.cup - Java CUP file containing LALR(1) grammar for Jasmin,
+ * along with calls to ClassFile methods to output bytecode.
+ */
+
+/* CHANGES
+ * soot.tagkits.Base64 is changed to Base64 from jas package. 
+ *
+ * Feng Qian, Jan 25, 2001
+ */
+
+package jasmin;
+
+import java_cup.runtime.*;
+import java_cup.*;
+import jas.*;
+import java.io.*;
+import java.util.Hashtable;
+
+/* Preliminaries to set up and use the scanner.  */
+
+action code {:
+    short access_val;
+    public Scanner scanner;
+    public ClassFile classFile;
+:};
+
+parser code {:
+
+	// parser code
+
+	public Scanner scanner;
+	public ClassFile classFile;
+	
+	public void report_error(String message, Object info)  {
+    	classFile.report_error("Warning - " + message);
+	}
+
+	public void report_fatal_error(String message, Object info)  {
+    	classFile.report_error("Error - " + message);
+    	// System.exit(-1);
+	}
+
+	parser(ClassFile classFile, Scanner scanner) {
+	    super();
+
+	    this.scanner = scanner;
+	    this.classFile = classFile;
+	}
+:};
+
+init with {:
+	action_obj.scanner = scanner;
+	action_obj.classFile = classFile;
+:};
+
+scan with {:
+    return scanner.next_token();
+:};
+
+
+
+/* Terminals (tokens returned by the scanner). */
+terminal token
+    // Directives (words beginning with a '.')
+    DCATCH, DCLASS, DEND, DFIELD, DLIMIT, DLINE, DMETHOD, DSET, DSUPER,
+    DNOSUPER, DSOURCE, DTHROWS, DVAR, DIMPLEMENTS, DINTERFACE,
+
+    // Attributes
+	DCODE_ATTR, DCLASS_ATTR, DFIELD_ATTR, DMETHOD_ATTR, DINNER_CLASS_ATTR, DINNER_CLASS_SPEC_ATTR, DSYNTHETIC, DENCLOSING_METH, DDEPRECATED, DSIG_ATTR, DRUNTIME_VISIBLE, DRUNTIME_INVISIBLE, DRUNTIME_PARAM_VISIBLE, DRUNTIME_PARAM_INVISIBLE, DANNOTATION_ATTR, DANNOTATION, INT_KIND, BYTE_KIND, CHAR_KIND, SHORT_KIND, BOOL_KIND, LONG_KIND, DOUB_KIND, FLOAT_KIND, ARR_KIND, ANN_KIND, ENUM_KIND, CLS_KIND, STR_KIND, DARR_ELEM, DANNOT_ELEM, DELEM, DANNOT_DEFAULT, DPARAM_ANNOT_ATTR, 
+
+
+    // keywords for directives
+    TO, USING, IS, FROM, METHOD,
+
+    // access types
+    ABSTRACT, FINAL, INTERFACE, NATIVE, PRIVATE, PROTECTED, PUBLIC, STATIC,
+    SYNCHRONIZED, TRANSIENT, VOLATILE, STRICTFP, ANNOTATION, ENUM, 
+
+    // complex instructions
+    LOOKUPSWITCH, TABLESWITCH, DEFAULT,
+
+    // special symbols
+    EQ, SEP, COLON,
+    
+    // instructions
+    i_aaload, i_aastore, i_aconst_null, i_aload, i_aload_0, i_aload_1, i_aload_2, i_aload_3, i_anewarray, i_areturn, 
+    i_arraylength, i_astore, i_astore_0, i_astore_1, i_astore_2, i_astore_3, i_athrow, i_baload, i_bastore, i_bipush, 
+    i_breakpoint, i_caload, i_castore, i_checkcast, i_d2f, i_d2i, i_d2l, i_dadd, i_daload, i_dastore, i_dcmpg, i_dcmpl, 
+    i_dconst_0, i_dconst_1, i_ddiv, i_dload, i_dload_0, i_dload_1, i_dload_2, i_dload_3, i_dmul, i_dneg, i_drem, i_dreturn, 
+    i_dstore, i_dstore_0, i_dstore_1, i_dstore_2, i_dstore_3, i_dsub, i_dup, i_dup2, i_dup2_x1, i_dup2_x2, i_dup_x1, 
+    i_dup_x2, i_f2d, i_f2i, i_f2l, i_fadd, i_faload, i_fastore, i_fcmpg, i_fcmpl, i_fconst_0, i_fconst_1, i_fconst_2, 
+    i_fdiv, i_fload, i_fload_0, i_fload_1, i_fload_2, i_fload_3, i_fmul, i_fneg, i_frem, i_freturn, i_fstore, i_fstore_0, 
+    i_fstore_1, i_fstore_2, i_fstore_3, i_fsub, i_getfield, i_getstatic, i_goto, i_goto_w, i_i2d, i_i2f, i_i2l, i_iadd, 
+    i_iaload, i_iand, i_iastore, i_iconst_0, i_iconst_1, i_iconst_2, i_iconst_3, i_iconst_4, i_iconst_5, i_iconst_m1, 
+    i_idiv, i_if_acmpeq, i_if_acmpne, i_if_icmpeq, i_if_icmpge, i_if_icmpgt, i_if_icmple, i_if_icmplt, i_if_icmpne, 
+    i_ifeq, i_ifge, i_ifgt, i_ifle, i_iflt, i_ifne, i_ifnonnull, i_ifnull, i_iinc, i_iload, i_iload_0, i_iload_1, 
+    i_iload_2, i_iload_3, i_imul, i_ineg, i_instanceof, i_int2byte, i_int2char, i_int2short, i_i2b, i_i2c, i_i2s, 
+    i_invokeinterface, i_invokenonvirtual, i_invokespecial, i_invokestatic, i_invokevirtual, i_invokedynamic, i_ior, 
+    i_irem, i_ireturn, i_ishl, i_ishr, i_istore, i_istore_0, i_istore_1, i_istore_2, i_istore_3, i_isub, i_iushr, i_ixor, 
+    i_jsr, i_jsr_w, i_l2d, i_l2f, i_l2i, i_ladd, i_laload, i_land, i_lastore, i_lcmp, i_lconst_0, i_lconst_1, i_ldc, 
+    i_ldc_w, i_ldc2_w, i_ldiv, i_lload, i_lload_0, i_lload_1, i_lload_2, i_lload_3, i_lmul, i_lneg, i_lookupswitch, 
+    i_lor, i_lrem, i_lreturn, i_lshl, i_lshr, i_lstore, i_lstore_0, i_lstore_1, i_lstore_2, i_lstore_3, i_lsub, i_lushr, 
+    i_lxor, i_monitorenter, i_monitorexit, i_multianewarray, i_new, i_newarray, i_nop, i_pop, i_pop2, i_putfield, 
+    i_putstatic, i_ret, i_ret_w, i_return, i_saload, i_sastore, i_sipush, i_swap, i_tableswitch, i_wide
+    
+    
+ ;
+
+terminal String Str, Word;
+terminal Integer Int;
+terminal Number Num;
+
+nonterminal String Insn;
+nonterminal String Word_plus_keywords;
+nonterminal Object optional_default, item;
+nonterminal Object deprecated_attr, signature_attr;
+
+/* Non terminals */
+nonterminal 
+       access_item, access_items, access_list, catch_expr, class_spec,
+       complex_instruction, defmethod, directive, endmethod, field_list,
+       field_spec, fields, instruction, impls, implements_list, 
+       implements_spec,
+       jas_file, label, limit_expr, lookup,
+       lookup_args, lookup_default, lookup_entry, lookup_list_t, lookup_list, 
+       method_list,
+       method_spec, methods, set_expr, simple_instruction, source_spec,
+       statement, statements, stmnt, super_spec, table, table_args, line_expr,
+       table_default, table_entry, table_list_t, table_list, throws_expr, 
+       var_expr, 
+	   code_attr_expr, 
+	   class_attrs, class_attr_list,  class_attr_spec,
+	   method_item, method_attrs, method_attr_list,  method_attr_spec,
+	   field_item, field_attrs, field_attr_list,  field_attr_spec,
+       inner_class_attr, inner_class_attr_list, inner_class_attr_spec,
+       end_inner_class_attr, synth_attr, encl_meth_attr,
+       meth_synth_attr, meth_depr_attr, meth_sig_attr, class_depr_attr,
+       class_sig_attr, visibility_type, annotation_attr, annotation_list,
+       annotation, elem_val_pair_list, meth_annotation_attr, 
+       class_annotation_attr, elem_val_pair, meth_annotation_default_attr,
+       meth_param_annotation_attr, annotation_attr_list,
+       param_visibility_type, annotation_attr_opt, annotation_list_opt,
+       elem_val_pair_list_opt
+    ;
+
+nonterminal Short access;
+
+/* The grammar */
+
+jas_file ::=
+        source_spec        
+        class_spec
+        super_spec
+	    impls
+	    class_attrs
+        synth_attr
+        inner_class_attr
+        encl_meth_attr
+        class_depr_attr
+        class_sig_attr
+        class_annotation_attr
+        fields
+        methods
+    ;
+
+// ---- Source specification
+
+source_spec ::=
+    DSOURCE Word:w SEP
+        {: classFile.setSource(w); :}
+    |
+    /* nothing */
+;
+
+// ---- Class specification
+
+class_spec ::=
+    DCLASS access:a Word_plus_keywords:name SEP
+        {:
+            classFile.setClass(name,
+                (short)(a.intValue() | RuntimeConstants.ACC_SUPER));
+        :}
+    |
+    DINTERFACE access:a Word_plus_keywords:name SEP
+        {:
+            classFile.setClass(name,
+                (short)(a.intValue() |
+                        RuntimeConstants.ACC_INTERFACE));
+        :}
+  ;
+
+Word_plus_keywords ::=
+    Word:w       {: RESULT = ScannerUtils.convertDots(w); :}
+  | FROM         {: RESULT = "from"; :}
+  | TO           {: RESULT = "to"; :}
+  | USING        {: RESULT = "using"; :}
+  | IS           {: RESULT = "is"; :}
+  | METHOD       {: RESULT = "method"; :}
+  | LOOKUPSWITCH {: RESULT = "lookupswitch"; :}
+  | TABLESWITCH  {: RESULT = "tableswitch"; :}
+  | DEFAULT      {: RESULT = "default"; :}
+  | Insn:i       {: RESULT = i; :} 
+  ;
+
+// Don't wanna live in another world. That's the way it was meant to be.
+Insn ::=
+  i_aaload {: RESULT = "aaload" :}
+| i_aastore {: RESULT = "aastore" :}
+| i_aconst_null {: RESULT = "aconst_null" :}
+| i_aload {: RESULT = "aload" :}
+| i_aload_0 {: RESULT = "aload_0" :}
+| i_aload_1 {: RESULT = "aload_1" :}
+| i_aload_2 {: RESULT = "aload_2" :}
+| i_aload_3 {: RESULT = "aload_3" :}
+| i_anewarray {: RESULT = "anewarray" :}
+| i_areturn {: RESULT = "areturn" :}
+| i_arraylength {: RESULT = "arraylength" :}
+| i_astore {: RESULT = "astore" :}
+| i_astore_0 {: RESULT = "astore_0" :}
+| i_astore_1 {: RESULT = "astore_1" :}
+| i_astore_2 {: RESULT = "astore_2" :}
+| i_astore_3 {: RESULT = "astore_3" :}
+| i_athrow {: RESULT = "athrow" :}
+| i_baload {: RESULT = "baload" :}
+| i_bastore {: RESULT = "bastore" :}
+| i_bipush {: RESULT = "bipush" :}
+| i_breakpoint {: RESULT = "breakpoint" :}
+| i_caload {: RESULT = "caload" :}
+| i_castore {: RESULT = "castore" :}
+| i_checkcast {: RESULT = "checkcast" :}
+| i_d2f {: RESULT = "d2f" :}
+| i_d2i {: RESULT = "d2i" :}
+| i_d2l {: RESULT = "d2l" :}
+| i_dadd {: RESULT = "dadd" :}
+| i_daload {: RESULT = "daload" :}
+| i_dastore {: RESULT = "dastore" :}
+| i_dcmpg {: RESULT = "dcmpg" :}
+| i_dcmpl {: RESULT = "dcmpl" :}
+| i_dconst_0 {: RESULT = "dconst_0" :}
+| i_dconst_1 {: RESULT = "dconst_1" :}
+| i_ddiv {: RESULT = "ddiv" :}
+| i_dload {: RESULT = "dload" :}
+| i_dload_0 {: RESULT = "dload_0" :}
+| i_dload_1 {: RESULT = "dload_1" :}
+| i_dload_2 {: RESULT = "dload_2" :}
+| i_dload_3 {: RESULT = "dload_3" :}
+| i_dmul {: RESULT = "dmul" :}
+| i_dneg {: RESULT = "dneg" :}
+| i_drem {: RESULT = "drem" :}
+| i_dreturn {: RESULT = "dreturn" :}
+| i_dstore {: RESULT = "dstore" :}
+| i_dstore_0 {: RESULT = "dstore_0" :}
+| i_dstore_1 {: RESULT = "dstore_1" :}
+| i_dstore_2 {: RESULT = "dstore_2" :}
+| i_dstore_3 {: RESULT = "dstore_3" :}
+| i_dsub {: RESULT = "dsub" :}
+| i_dup {: RESULT = "dup" :}
+| i_dup2 {: RESULT = "dup2" :}
+| i_dup2_x1 {: RESULT = "dup2_x1" :}
+| i_dup2_x2 {: RESULT = "dup2_x2" :}
+| i_dup_x1 {: RESULT = "dup_x1" :}
+| i_dup_x2 {: RESULT = "dup_x2" :}
+| i_f2d {: RESULT = "f2d" :}
+| i_f2i {: RESULT = "f2i" :}
+| i_f2l {: RESULT = "f2l" :}
+| i_fadd {: RESULT = "fadd" :}
+| i_faload {: RESULT = "faload" :}
+| i_fastore {: RESULT = "fastore" :}
+| i_fcmpg {: RESULT = "fcmpg" :}
+| i_fcmpl {: RESULT = "fcmpl" :}
+| i_fconst_0 {: RESULT = "fconst_0" :}
+| i_fconst_1 {: RESULT = "fconst_1" :}
+| i_fconst_2 {: RESULT = "fconst_2" :}
+| i_fdiv {: RESULT = "fdiv" :}
+| i_fload {: RESULT = "fload" :}
+| i_fload_0 {: RESULT = "fload_0" :}
+| i_fload_1 {: RESULT = "fload_1" :}
+| i_fload_2 {: RESULT = "fload_2" :}
+| i_fload_3 {: RESULT = "fload_3" :}
+| i_fmul {: RESULT = "fmul" :}
+| i_fneg {: RESULT = "fneg" :}
+| i_frem {: RESULT = "frem" :}
+| i_freturn {: RESULT = "freturn" :}
+| i_fstore {: RESULT = "fstore" :}
+| i_fstore_0 {: RESULT = "fstore_0" :}
+| i_fstore_1 {: RESULT = "fstore_1" :}
+| i_fstore_2 {: RESULT = "fstore_2" :}
+| i_fstore_3 {: RESULT = "fstore_3" :}
+| i_fsub {: RESULT = "fsub" :}
+| i_getfield {: RESULT = "getfield" :}
+| i_getstatic {: RESULT = "getstatic" :}
+| i_goto {: RESULT = "goto" :}
+| i_goto_w {: RESULT = "goto_w" :}
+| i_i2d {: RESULT = "i2d" :}
+| i_i2f {: RESULT = "i2f" :}
+| i_i2l {: RESULT = "i2l" :}
+| i_iadd {: RESULT = "iadd" :}
+| i_iaload {: RESULT = "iaload" :}
+| i_iand {: RESULT = "iand" :}
+| i_iastore {: RESULT = "iastore" :}
+| i_iconst_0 {: RESULT = "iconst_0" :}
+| i_iconst_1 {: RESULT = "iconst_1" :}
+| i_iconst_2 {: RESULT = "iconst_2" :}
+| i_iconst_3 {: RESULT = "iconst_3" :}
+| i_iconst_4 {: RESULT = "iconst_4" :}
+| i_iconst_5 {: RESULT = "iconst_5" :}
+| i_iconst_m1 {: RESULT = "iconst_m1" :}
+| i_idiv {: RESULT = "idiv" :}
+| i_if_acmpeq {: RESULT = "if_acmpeq" :}
+| i_if_acmpne {: RESULT = "if_acmpne" :}
+| i_if_icmpeq {: RESULT = "if_icmpeq" :}
+| i_if_icmpge {: RESULT = "if_icmpge" :}
+| i_if_icmpgt {: RESULT = "if_icmpgt" :}
+| i_if_icmple {: RESULT = "if_icmple" :}
+| i_if_icmplt {: RESULT = "if_icmplt" :}
+| i_if_icmpne {: RESULT = "if_icmpne" :}
+| i_ifeq {: RESULT = "ifeq" :}
+| i_ifge {: RESULT = "ifge" :}
+| i_ifgt {: RESULT = "ifgt" :}
+| i_ifle {: RESULT = "ifle" :}
+| i_iflt {: RESULT = "iflt" :}
+| i_ifne {: RESULT = "ifne" :}
+| i_ifnonnull {: RESULT = "ifnonnull" :}
+| i_ifnull {: RESULT = "ifnull" :}
+| i_iinc {: RESULT = "iinc" :}
+| i_iload {: RESULT = "iload" :}
+| i_iload_0 {: RESULT = "iload_0" :}
+| i_iload_1 {: RESULT = "iload_1" :}
+| i_iload_2 {: RESULT = "iload_2" :}
+| i_iload_3 {: RESULT = "iload_3" :}
+| i_imul {: RESULT = "imul" :}
+| i_ineg {: RESULT = "ineg" :}
+| i_instanceof {: RESULT = "instanceof" :}
+| i_int2byte {: RESULT = "int2byte" :}
+| i_int2char {: RESULT = "int2char" :}
+| i_int2short {: RESULT = "int2short" :}
+| i_i2b {: RESULT = "i2b" :}
+| i_i2c {: RESULT = "i2c" :}
+| i_i2s {: RESULT = "i2s" :}
+| i_invokeinterface {: RESULT = "invokeinterface" :}
+| i_invokenonvirtual {: RESULT = "invokenonvirtual" :}
+| i_invokespecial {: RESULT = "invokespecial" :}
+| i_invokestatic {: RESULT = "invokestatic" :}
+| i_invokevirtual {: RESULT = "invokevirtual" :}
+| i_invokedynamic {: RESULT = "invokedynamic" :}
+| i_ior {: RESULT = "ior" :}
+| i_irem {: RESULT = "irem" :}
+| i_ireturn {: RESULT = "ireturn" :}
+| i_ishl {: RESULT = "ishl" :}
+| i_ishr {: RESULT = "ishr" :}
+| i_istore {: RESULT = "istore" :}
+| i_istore_0 {: RESULT = "istore_0" :}
+| i_istore_1 {: RESULT = "istore_1" :}
+| i_istore_2 {: RESULT = "istore_2" :}
+| i_istore_3 {: RESULT = "istore_3" :}
+| i_isub {: RESULT = "isub" :}
+| i_iushr {: RESULT = "iushr" :}
+| i_ixor {: RESULT = "ixor" :}
+| i_jsr {: RESULT = "jsr" :}
+| i_jsr_w {: RESULT = "jsr_w" :}
+| i_l2d {: RESULT = "l2d" :}
+| i_l2f {: RESULT = "l2f" :}
+| i_l2i {: RESULT = "l2i" :}
+| i_ladd {: RESULT = "ladd" :}
+| i_laload {: RESULT = "laload" :}
+| i_land {: RESULT = "land" :}
+| i_lastore {: RESULT = "lastore" :}
+| i_lcmp {: RESULT = "lcmp" :}
+| i_lconst_0 {: RESULT = "lconst_0" :}
+| i_lconst_1 {: RESULT = "lconst_1" :}
+| i_ldc {: RESULT = "ldc" :}
+| i_ldc_w {: RESULT = "ldc_w" :}
+| i_ldc2_w {: RESULT = "ldc2_w" :}
+| i_ldiv {: RESULT = "ldiv" :}
+| i_lload {: RESULT = "lload" :}
+| i_lload_0 {: RESULT = "lload_0" :}
+| i_lload_1 {: RESULT = "lload_1" :}
+| i_lload_2 {: RESULT = "lload_2" :}
+| i_lload_3 {: RESULT = "lload_3" :}
+| i_lmul {: RESULT = "lmul" :}
+| i_lneg {: RESULT = "lneg" :}
+| i_lookupswitch {: RESULT = "lookupswitch" :}
+| i_lor {: RESULT = "lor" :}
+| i_lrem {: RESULT = "lrem" :}
+| i_lreturn {: RESULT = "lreturn" :}
+| i_lshl {: RESULT = "lshl" :}
+| i_lshr {: RESULT = "lshr" :}
+| i_lstore {: RESULT = "lstore" :}
+| i_lstore_0 {: RESULT = "lstore_0" :}
+| i_lstore_1 {: RESULT = "lstore_1" :}
+| i_lstore_2 {: RESULT = "lstore_2" :}
+| i_lstore_3 {: RESULT = "lstore_3" :}
+| i_lsub {: RESULT = "lsub" :}
+| i_lushr {: RESULT = "lushr" :}
+| i_lxor {: RESULT = "lxor" :}
+| i_monitorenter {: RESULT = "monitorenter" :}
+| i_monitorexit {: RESULT = "monitorexit" :}
+| i_multianewarray {: RESULT = "multianewarray" :}
+| i_new {: RESULT = "new" :}
+| i_newarray {: RESULT = "newarray" :}
+| i_nop {: RESULT = "nop" :}
+| i_pop {: RESULT = "pop" :}
+| i_pop2 {: RESULT = "pop2" :}
+| i_putfield {: RESULT = "putfield" :}
+| i_putstatic {: RESULT = "putstatic" :}
+| i_ret {: RESULT = "ret" :}
+| i_ret_w {: RESULT = "ret_w" :}
+| i_return {: RESULT = "return" :}
+| i_saload {: RESULT = "saload" :}
+| i_sastore {: RESULT = "sastore" :}
+| i_sipush {: RESULT = "sipush" :}
+| i_swap {: RESULT = "swap" :}
+| i_tableswitch {: RESULT = "tableswitch" :}
+| i_wide {: RESULT = "wide" :}
+;
+
+access ::=
+    {: access_val = 0; :}
+        access_list
+    {: RESULT = new Short(access_val); :}
+ ;
+
+
+access_list ::= access_items | ;
+access_items ::= access_items access_item | access_item ;
+
+access_item ::=
+    PUBLIC       {: access_val |= RuntimeConstants.ACC_PUBLIC; :}
+    |
+    PRIVATE      {: access_val |= RuntimeConstants.ACC_PRIVATE; :}
+    |
+    PROTECTED    {: access_val |= RuntimeConstants.ACC_PROTECTED; :}
+    |
+    STATIC       {: access_val |= RuntimeConstants.ACC_STATIC; :}
+    |
+    FINAL        {: access_val |= RuntimeConstants.ACC_FINAL; :}
+    |
+    SYNCHRONIZED {: access_val |= RuntimeConstants.ACC_SYNCHRONIZED; :}
+    |
+    VOLATILE     {: access_val |= RuntimeConstants.ACC_VOLATILE; :}
+    |
+    TRANSIENT    {: access_val |= RuntimeConstants.ACC_TRANSIENT; :}
+    |
+    NATIVE       {: access_val |= RuntimeConstants.ACC_NATIVE; :}
+    |
+    INTERFACE    {: access_val |= RuntimeConstants.ACC_INTERFACE; :}
+    |
+    ABSTRACT     {: access_val |= RuntimeConstants.ACC_ABSTRACT; :}
+    |
+    STRICTFP     {: access_val |= RuntimeConstants.ACC_STRICTFP; :}
+    |
+    ANNOTATION     {: access_val |= RuntimeConstants.ACC_ANNOTATION; :}
+    |
+    ENUM     {: access_val |= RuntimeConstants.ACC_ENUM; :}
+  ;
+
+// ---- Superclass specification
+
+super_spec ::=
+    DSUPER Word_plus_keywords:name SEP
+        {:
+            classFile.setSuperClass(name);
+        :}
+    |
+    DNOSUPER SEP
+        {:
+            classFile.setNoSuperClass();
+        :}
+  ;
+
+// ---- Implements specification
+
+impls ::= implements_list | /* empty */ ;
+
+implements_list ::= implements_list implements_spec | implements_spec ;
+
+implements_spec ::= DIMPLEMENTS Word_plus_keywords:name SEP
+	{: classFile.addInterface(name); :}
+    ;
+
+class_depr_attr ::= deprecated_attr:dep_attr
+    {:
+        classFile.addClassDeprAttr(dep_attr);
+    :}
+;    
+
+class_sig_attr ::= signature_attr:sig_attr
+    {:
+        classFile.addClassSigAttr(sig_attr);
+    :}
+;    
+
+class_annotation_attr ::=
+    annotation_attr_opt:annot_attr 
+    {:
+    	if(annot_attr!=null) {
+	        if(((VisibilityAnnotationAttr)annot_attr).getKind().equals("RuntimeVisible"))
+	        	classFile.addClassAnnotAttrVisible(annot_attr);
+	        else
+	            classFile.addClassAnnotAttrInvisible(annot_attr);
+	    }
+    :}
+    |
+    annotation_attr:annot_attr annotation_attr:annot_attr2
+    {:
+        if(((VisibilityAnnotationAttr)annot_attr).getKind().equals("RuntimeVisible"))
+        	classFile.addClassAnnotAttrVisible(annot_attr);
+        else
+            classFile.addClassAnnotAttrInvisible(annot_attr);
+        if(((VisibilityAnnotationAttr)annot_attr2).getKind().equals("RuntimeVisible"))
+        	classFile.addClassAnnotAttrVisible(annot_attr2);
+        else
+            classFile.addClassAnnotAttrInvisible(annot_attr2);        
+    :}
+;    
+    
+// ---- Fields
+
+fields ::= field_list | /* empty */ ;
+
+field_list ::= field_list field_item | field_item;
+
+field_item ::= field_spec field_attrs | field_spec;
+
+field_spec ::=
+    DFIELD access:a Str:name Word:sig optional_default:v SEP deprecated_attr:dep_attr signature_attr:sig_attr annotation_attr_opt:vis_annot_attr
+        {:
+            classFile.addField((short)a.intValue(), name, sig, v, dep_attr, sig_attr, vis_annot_attr, null);
+        :}
+   |
+   DFIELD access:a Str:name Word:sig optional_default:v DSYNTHETIC SEP deprecated_attr:dep_attr signature_attr:sig_attr annotation_attr_opt:vis_annot_attr
+        {:
+            classFile.addField((short)a.intValue(), name, sig, v, "synth", dep_attr, sig_attr, vis_annot_attr, null);
+        :}
+   |
+    DFIELD access:a Str:name Word:sig optional_default:v SEP deprecated_attr:dep_attr signature_attr:sig_attr annotation_attr:vis_annot_attr1 annotation_attr:vis_annot_attr2
+        {:
+            classFile.addField((short)a.intValue(), name, sig, v, dep_attr, sig_attr, vis_annot_attr1, vis_annot_attr2);
+        :}
+   |
+   DFIELD access:a Str:name Word:sig optional_default:v DSYNTHETIC SEP deprecated_attr:dep_attr signature_attr:sig_attr annotation_attr:vis_annot_attr1 annotation_attr:vis_annot_attr2
+        {:
+            classFile.addField((short)a.intValue(), name, sig, v, "synth", dep_attr, sig_attr, vis_annot_attr1, vis_annot_attr2);
+        :}
+   ;
+
+// default value for a field
+optional_default ::=
+     EQ item:v   {: RESULT = v; :}
+     |
+     /* empty */ {: RESULT = null; :}
+  ;
+
+// an item is an integer, a float/double/long, or a quoted string
+item ::=
+    Int:i {: RESULT = i; :}
+    |
+    Num:n {: RESULT = n; :}
+    |
+    Str:s {: RESULT = s; :}
+  ;
+
+// ---- Methods
+
+methods ::= method_list | /* empty */;
+
+method_list ::= method_list method_item | method_item;
+
+method_item ::= method_spec method_attrs | method_spec;
+
+method_spec ::=
+    defmethod
+    statements
+    endmethod
+    |
+    defmethod endmethod
+ ;
+
+defmethod ::=
+    DMETHOD access:i Word:name SEP
+        {:
+            String split[] = ScannerUtils.splitMethodSignature(name);
+            classFile.newMethod(split[0], split[1], i.intValue());
+        :}
+  ;
+
+endmethod ::=
+    DEND METHOD SEP
+        {:
+            classFile.endMethod();
+        :}
+  ;
+
+
+// ---- Statements in a method
+
+statements ::= statements statement | statement ;
+
+statement ::=
+     {: classFile.setLine(scanner.token_line_num); :}
+     stmnt SEP
+  ;
+
+stmnt ::=
+    instruction
+    |
+    directive
+    |
+    error
+    |
+    label
+    |
+    /* empty */
+  ;
+
+// label:
+label ::=
+    Word:label COLON
+        {:
+            classFile.plantLabel(label);
+        :}
+  ;
+
+// Directives (.catch, .set, .limit, etc.)
+
+directive ::=
+    DVAR var_expr
+    |
+    DLIMIT limit_expr
+    |
+    DLINE line_expr
+    |
+    DTHROWS throws_expr
+    |
+    DCATCH catch_expr
+    |
+    DSET set_expr
+    |
+    DCODE_ATTR code_attr_expr   
+    |
+    meth_synth_attr
+    | 
+    meth_depr_attr
+    |
+    meth_sig_attr
+    |
+    meth_annotation_attr
+    |
+    meth_annotation_default_attr
+    |
+    meth_param_annotation_attr
+  ;
+
+meth_synth_attr ::= DSYNTHETIC
+    {:
+        classFile.addMethSynthAttr();
+    :}
+;
+
+meth_depr_attr ::= DDEPRECATED
+    {:
+        classFile.addMethDeprAttr();
+    :}
+;    
+
+meth_sig_attr ::= DSIG_ATTR Str:s
+    {:
+        classFile.addMethSigAttr(s);
+    :}
+;    
+
+meth_annotation_attr ::= visibility_type:tval SEP annotation_list:list DEND DANNOTATION_ATTR 
+    {:
+        RESULT = classFile.makeVisibilityAnnotation(tval, list);
+        if(tval.equals("RuntimeVisible"))
+        	classFile.addMethAnnotAttrVisible(RESULT);
+        else
+            classFile.addMethAnnotAttrInvisible(RESULT);        
+    :}
+;
+
+meth_param_annotation_attr ::= DPARAM_ANNOT_ATTR visibility_type:kind SEP annotation_attr_list:list DEND DPARAM_ANNOT_ATTR
+    {:
+        RESULT = classFile.makeParameterVisibilityAnnotation(kind, list);
+        if(kind.equals("RuntimeVisible"))
+        	classFile.addMethParamAnnotAttrVisible(RESULT);
+        else
+            classFile.addMethParamAnnotAttrInvisible(RESULT);        
+    :}
+;
+
+annotation_attr_list ::= 
+    annotation_attr_list:list annotation_attr:elem 
+    {:
+        RESULT = classFile.mergeNewAnnotAttr(list, elem);
+    :}
+    |
+    annotation_attr:elem
+    {:
+        RESULT = classFile.makeNewAnnotAttrList(elem);
+    :}
+;    
+
+meth_annotation_default_attr ::= DANNOT_DEFAULT elem_val_pair:def DEND DANNOT_DEFAULT 
+    {:
+        classFile.addMethAnnotDefault(def);
+    :}
+;    
+
+code_attr_expr ::=
+ Word:w Str:v
+          {:
+               classFile.addSootCodeAttr(w, v);    
+          :}
+;
+
+//
+// .var <num> is <name> <sig> from StartLab to EndLab
+//
+var_expr ::=
+    Int:reg IS Word:name Word:sig FROM Word:slab TO Word:elab
+        {:
+             classFile.addVar(slab, elab, name,
+                            sig, reg.intValue());
+        :}
+    |
+    Int:reg IS Word:name Word:sig
+        {:
+             classFile.addVar(null, null, name, sig, reg.intValue());
+        :}
+;
+
+
+// .limit stack <val>
+// .limit locals <val>
+
+limit_expr ::=
+    Word:w Int:v
+      {:
+        // .limit locals
+        if (w.equals("locals")
+                 || w.equals("vars")) // "vars" for historic reasons
+            classFile.setVarSize((short)v.intValue());
+        // .limit stack
+        else if (w.equals("stack"))
+            classFile.setStackSize((short)v.intValue());
+        else
+            classFile.report_error(".limit expected \"stack\" or \"locals\", but got "
+                          + w);
+      :}
+;
+
+// .line <num>
+line_expr ::=
+    Int:v
+       {: classFile.addLine(v.intValue()); :}
+;
+
+// .throws <class>
+throws_expr ::=
+    Word_plus_keywords:s
+        {:
+            classFile.addThrow(s);
+        :}
+  ;
+
+// .catch <class> from <label1> to <label2> using <branchlab>
+catch_expr ::=
+    Word_plus_keywords:aclass FROM Word:fromlab TO Word:tolab USING Word:branchlab
+        {:
+            classFile.addCatch(aclass,
+                            fromlab, tolab,
+                            branchlab);
+        :}
+  ;
+
+// .set <var> = <val>
+set_expr ::=
+    Word:name Int:v     {: scanner.dict.put(name, v); :}
+    |
+    Word:name Word:v    {: scanner.dict.put(name, v); :}
+    |
+    Word:name Num:v  {: scanner.dict.put(name, v); :}
+    |
+    Word:name Str:v  {: scanner.dict.put(name, v); :}
+;
+
+instruction ::=
+    simple_instruction
+    |
+    complex_instruction
+ ;
+
+// Various patterns of instruction:
+//      instruction [<pattern>]
+simple_instruction ::=
+    Insn:i
+        {:
+            classFile.plant(i);
+        :}
+    |
+    Insn:i Int:n1 Int:n2
+        {:
+            classFile.plant(i, n1.intValue(), n2.intValue());
+        :}
+    |
+    Insn:i Int:n
+        {:
+            classFile.plant(i, n.intValue());
+        :}
+    |
+    Insn:i Num:n
+        {:
+            classFile.plant(i, n);
+        :}
+    |
+    Insn:i Word_plus_keywords:n
+        {:
+            classFile.plant(i, n);
+        :}
+    |
+    Insn:i Word_plus_keywords:n Int:n2
+        {:
+            classFile.plant(i, n, n2.intValue());
+        :}
+    |
+    Insn:i Word_plus_keywords:n1 Word_plus_keywords:n2
+        {:
+            classFile.plant(i, n1, n2);
+        :}
+    |
+    Insn:i Str:n1 Word_plus_keywords:n2 Word_plus_keywords:n3
+        {:
+            classFile.plant(i, n1, n2, n3);
+        :}
+    |
+    Insn:i Str:n
+        {:
+            classFile.plantString(i, n);
+        :}
+  ;
+
+// complex (i.e. multiline) instructions
+//      lookupswitch <lookup>
+//      tableswitch  <table>
+
+complex_instruction ::=
+    LOOKUPSWITCH lookup
+    |
+    TABLESWITCH table
+ ;
+
+// lookupswitch
+//     <value> : <label>
+//     <value> : <label>
+//     ...
+//     default : <label>
+
+lookup ::=
+    lookup_args
+    lookup_list_t
+    lookup_default
+  ;
+
+lookup_args ::=
+    SEP         /* no arguments to lookupswitch */
+        {: classFile.newLookupswitch(); :}
+  ;
+
+lookup_list_t ::=
+     | lookup_list
+  ;
+
+lookup_list ::=
+    lookup_list lookup_entry | lookup_entry 
+ ;
+
+lookup_entry ::=
+    Int:i COLON Word:w SEP
+        {:
+            classFile.addLookupswitch(i.intValue(), w);
+        :}
+  ;
+
+lookup_default ::=
+    DEFAULT COLON Word:w
+        {: classFile.endLookupswitch(w); :}
+  ;
+
+
+// tableswitch <low> [<high>]
+//     <label>
+//     <label>
+//     ...
+//     default : <label>
+
+table ::=
+    table_args
+    table_list_t
+    table_default
+  ;
+
+table_args ::=
+    Int:low SEP     /* one argument : the <low> parameter */
+        {:
+            classFile.newTableswitch(low.intValue());
+        :}
+    |
+    Int:low Int:high SEP     /* two arguments : <low> and <high> parameters */
+        {:
+            classFile.newTableswitch(low.intValue(), high.intValue());
+        :}
+  ;
+
+table_list_t ::=
+     | table_list
+	;
+
+table_list ::=
+    table_list table_entry | table_entry 
+  ;
+
+table_entry ::=
+    Word:w SEP
+        {:
+            classFile.addTableswitch(w);
+        :}
+  ;
+
+table_default ::=
+    DEFAULT COLON Word:w
+        {:
+            classFile.endTableswitch(w);
+        :}
+  ;
+
+
+
+
+class_attrs ::= class_attr_list | /* */;
+class_attr_list ::= class_attr_list class_attr_spec | class_attr_spec;
+class_attr_spec ::= DCLASS_ATTR  Word:w Str:v SEP 
+          {:
+		byte[] data = Base64.decode(v.toCharArray());
+                classFile.addGenericAttrToClass(new GenericAttr(w, data));             
+          :}
+;
+	
+method_attrs ::= method_attr_list; 
+method_attr_list ::= method_attr_list method_attr_spec | method_attr_spec;
+method_attr_spec ::= DMETHOD_ATTR  Word:w Str:v SEP
+          {:
+		 byte[] data = Base64.decode(v.toCharArray());
+                classFile.addGenericAttrToMethod(w, data);	
+          :}
+;
+
+	
+field_attrs ::= field_attr_list; 
+field_attr_list ::= field_attr_list field_attr_spec | field_attr_spec;
+field_attr_spec ::= DFIELD_ATTR  Word:w Str:v SEP
+          {:
+		 byte[] data = Base64.decode(v.toCharArray());
+                classFile.addGenericAttrToField(w, data);
+          :}
+;
+
+inner_class_attr ::= DINNER_CLASS_ATTR SEP inner_class_attr_list end_inner_class_attr
+    {:
+        classFile.addInnerClassAttr();
+    :}
+    |
+    /* empty*/
+;
+inner_class_attr_list ::= inner_class_attr_list inner_class_attr_spec | inner_class_attr_spec;
+inner_class_attr_spec ::= DINNER_CLASS_SPEC_ATTR Str:a Str:b Str:c access:d DEND DINNER_CLASS_SPEC_ATTR SEP
+    {:
+        classFile.addInnerClassSpec(a, b, c, (short)d.intValue());
+    :}
+;
+end_inner_class_attr ::= DEND DINNER_CLASS_ATTR SEP
+    {:
+        classFile.endInnerClassAttr();
+    :}
+;
+
+synth_attr ::= DSYNTHETIC SEP
+    {:
+        classFile.addClassSynthAttr();
+    :}
+    |
+    /* empty */
+;
+
+encl_meth_attr ::= DENCLOSING_METH Str:c Str:m Str:s SEP
+    {:
+        classFile.addEnclMethAttr(c, m, s);
+    :}
+    |
+    /* empty */
+;
+
+deprecated_attr ::= DDEPRECATED SEP
+    {:
+        RESULT = "deprecated";
+    :}
+    |
+    {:
+        /* empty */ RESULT = null;
+    :}    
+;
+
+signature_attr ::= DSIG_ATTR Str:sig SEP 
+    {:
+        RESULT = sig;
+    :}
+    | 
+    {:
+        /* empty */ RESULT = null;
+    :}    
+;
+
+visibility_type ::= 
+    DRUNTIME_VISIBLE 
+    {: RESULT = "RuntimeVisible"; :}
+    | 
+    DRUNTIME_INVISIBLE 
+    {: RESULT = "RuntimeInvisible"; :}
+;
+
+param_visibility_type ::=
+    DRUNTIME_PARAM_VISIBLE 
+    {: RESULT = "RuntimeVisibleParameter"; :}
+    | 
+    DRUNTIME_PARAM_INVISIBLE
+    {: RESULT = "RuntimeInvisibleParameter"; :}
+;    
+
+annotation_attr_opt ::= annotation_attr:attr
+    {:  
+        RESULT = attr;
+    :}
+    |
+    {:
+        RESULT = null; /* empty */
+    :}
+;
+
+annotation_attr ::= visibility_type:tval SEP annotation_list_opt:list DEND DANNOTATION_ATTR SEP 
+    {:
+        RESULT = classFile.makeVisibilityAnnotation(tval, list);
+    :}
+;    
+
+annotation_list_opt ::= annotation_list:list
+    {:
+        RESULT = list;
+    :}
+    |
+    /* empty */
+    {:
+        RESULT = null;
+    :}
+;    
+
+annotation_list ::= annotation_list:list annotation:elem {:
+        RESULT = classFile.mergeNewAnnotation(list, elem);
+    :}
+    | 
+    annotation:elem{:
+        RESULT = classFile.makeNewAnnotationList(elem);
+    :}
+;
+
+annotation ::= DANNOTATION Str:annotation_type SEP elem_val_pair_list_opt:elems DEND DANNOTATION SEP
+    {:
+        RESULT = classFile.makeAnnotation(annotation_type, elems);
+    :}
+;
+
+elem_val_pair_list_opt ::=
+    elem_val_pair_list:list
+    {:
+        RESULT = list;
+    :}
+    |
+    /* empty */
+    {:
+        RESULT = null;
+    :}
+;    
+    
+elem_val_pair_list ::= elem_val_pair_list:list elem_val_pair:elem {:
+        RESULT = classFile.mergeNewElemValPair(list, elem);
+    :}
+    | elem_val_pair:elem {:
+        RESULT = classFile.makeNewElemValPairList(elem);
+    :}
+;
+
+elem_val_pair ::= 
+    DELEM INT_KIND Str:name Int:val SEP{:
+        RESULT = classFile.makeConstantElem(name, 'I', val);
+    :}
+    |
+    DELEM SHORT_KIND Str:name Int:val SEP{:
+        RESULT = classFile.makeConstantElem(name, 'S', val);
+    :}
+    |
+    DELEM BYTE_KIND Str:name Int:val SEP{:
+        RESULT = classFile.makeConstantElem(name, 'B', val);
+    :}
+    |
+    DELEM CHAR_KIND Str:name Int:val SEP{:
+        RESULT = classFile.makeConstantElem(name, 'C', val);
+    :}
+    |
+    DELEM BOOL_KIND Str:name Int:val SEP{:
+        RESULT = classFile.makeConstantElem(name, 'Z', val);
+    :}
+    |
+    DELEM LONG_KIND Str:name item:val SEP{:
+        RESULT = classFile.makeConstantElem(name, 'J', val);
+    :}
+    |
+    DELEM FLOAT_KIND Str:name item:val SEP{:
+        RESULT = classFile.makeConstantElem(name, 'F', val);
+    :}
+    |
+    DELEM DOUB_KIND Str:name item:val SEP{:
+        RESULT = classFile.makeConstantElem(name, 'D', val);
+    :}
+    |
+    DELEM STR_KIND Str:name Str:val SEP{:
+        RESULT = classFile.makeConstantElem(name, 's', val);
+    :}
+    |
+    DELEM ENUM_KIND Str:name Str:tname Str:cname SEP{:
+        RESULT = classFile.makeEnumElem(name, 'e', tname, cname);
+    :}
+    |
+    DELEM CLS_KIND Str:name Str:desc SEP{:
+        RESULT = classFile.makeClassElem(name, 'c', desc);
+    :}
+    |
+    DELEM ARR_KIND Str:name SEP elem_val_pair_list_opt:list DEND DARR_ELEM SEP{:
+        RESULT = classFile.makeArrayElem(name, '[', list);
+    :}
+    |
+    DELEM ANN_KIND Str:name SEP annotation:attr DEND DANNOT_ELEM SEP{:
+        RESULT = classFile.makeAnnotElem(name, '@', attr);
+    :}
+;        
+        
+
+/* --- Revision History ---------------------------------------------------
+--- Jonathan Meyer, Mar 1 1997
+    Added ACC_SUPER flag - needed by 1.1.
+
+--- Jonathan Meyer, Oct 1 1996
+    Added support for .interface and .implements.
+
+--- Jonathan Meyer, July 25 1996
+    Slightly modified syntax of .var directive.
+
+    Added call to setLine to fix problem with line numbering.
+
+    Added definitions for report_error and report_fatal_error, and
+    also added 'error' token to statements list.
+*/

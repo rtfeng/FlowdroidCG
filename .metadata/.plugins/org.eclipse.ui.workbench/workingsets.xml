@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workingSetManager>
+<workingSet editPageId="org.eclipse.jdt.internal.ui.DynamicSourcesWorkingSet" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1536818606409_3" label="Java Main Sources" name="main">
+<item elementID="=jasmin/src" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=jasmin/lib\/jas\/src" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=jasmin/generated" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=heros/src" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=heros/test" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot/src\/main\/generated\/jastadd" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot/src\/main\/java" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot/src\/main\/generated\/options" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot/src\/main\/generated\/sablecc" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot/src\/main\/generated\/singletons" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot/src\/main\/resources" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot-infoflow/src" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot-infoflow/test" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot-infoflow/securiBench" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot-infoflow-android/src" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=soot-infoflow-android/schema" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=flowdroidcg/src" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+</workingSet>
+<workingSet editPageId="org.eclipse.jdt.internal.ui.DynamicSourcesWorkingSet" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1536818606412_4" label="Java Test Sources" name="test">
+<item elementID="=soot-infoflow-android/test" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+</workingSet>
+<workingSet aggregate="true" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1536757056668_0" label="Window Working Set" name="Aggregate for window 1536757056667"/>
+<workingSet aggregate="true" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1536759802304_1" label="Window Working Set" name="Aggregate for window 1536759802304"/>
+<workingSet aggregate="true" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1536816134282_2" label="Window Working Set" name="Aggregate for window 1536816134282"/>
+<workingSet aggregate="true" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1536818609502_5" label="Window Working Set" name="Aggregate for window 1536818609502"/>
+</workingSetManager>

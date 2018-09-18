@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/soot"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/soot-infoflow"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/soot-infoflow-android"/>
+	<classpathentry exported="true" kind="lib" path="/home/ruitao/workspace/flowdroidcg/lib/AXMLPrinter2.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/ruitao/workspace/flowdroidcg/lib/gexf4j-0.4.3-BETA.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/ruitao/workspace/flowdroidcg/lib/stax2-api-3.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/ruitao/workspace/flowdroidcg/lib/woodstox-core-asl-4.0.6.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

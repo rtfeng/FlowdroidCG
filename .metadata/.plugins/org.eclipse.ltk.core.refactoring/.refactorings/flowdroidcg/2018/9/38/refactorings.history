@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy 2 elements to &apos;flowdroidcg-android/src/flowdroidcgandroid&apos;&#x0A;- Original project: &apos;flowdroidcg&apos;&#x0A;- Destination element: &apos;flowdroidcg-android/src/flowdroidcgandroid&apos;&#x0A;- Original elements:&#x0A;     flowdroidcg.CGGenerator.java&#x0A;     flowdroidcg.CGExporter.java" description="Copy compilation units" destination="=flowdroidcg-android/src&lt;flowdroidcgandroid" element1="/src&lt;flowdroidcg{CGGenerator.java" element2="/src&lt;flowdroidcg{CGExporter.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1537168733647" units="2" version="1.0"/>
+</session>
